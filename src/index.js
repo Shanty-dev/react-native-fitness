@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3000;
 
 job.start();
 app.use(express.json()); //midlerwaere
-app.use(cors.json()); //midlerware
+app.use(cors()); //midlerware
 
 app.use("/api/auth",authRoutes);
 app.use("/api/fit",fitnastRoutes);
