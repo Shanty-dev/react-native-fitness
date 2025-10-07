@@ -18,9 +18,7 @@ route.post("/" , protectRoute, async (req,res) => {
     const imageUrl = uploadRespone.secure_Url;
     //save into db
     const newFitnast = new Fitnast ({
-      title, 
-      load, 
-      reps, 
+      title,  
       caption, 
       rating, 
       image: imageUrl,
