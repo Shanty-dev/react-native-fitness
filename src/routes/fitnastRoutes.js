@@ -1,18 +1,19 @@
 import express   from "express";
 import cloudinary from "../lib/cloudinary.js";
 import Fitnast from "../models/Fitnast.js";
-import User from "../models/User.js";
-import protectrouter from "../middleware/auth.middleware.js";
+import protectRoute from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-router.post("/" , protectrouter, async (req,res) => {
+router.post("/" , protectRoute, async (req,res) => {
   try {
 
-    const {title, load, reps, caption, rating, image} = req.body;
-    if(!title || !load || !reps || !caption || !rating|| !image){
+    const {title, caption, rating, image} = req.body;
+   
+    if(!title || !caption || !rating|| !image){
       return res.status(400).json({Message:"Please provide all filds"});
     }
+
     // uplode a image to couldinary
    const uploadRespone = await cloudinary.uploader.upload(image);
     const imageUrl = uploadRespone.secure_Url;
@@ -33,7 +34,7 @@ router.post("/" , protectrouter, async (req,res) => {
   }
 });
 // pages =infinite load
-router.get("/", protectrouter, async (req, res) => {
+router.get("/", protectRoute, async (req, res) => {
   try {
     const page = req.query.page || 1;
     const limit = req.query.limit || 2;
@@ -58,7 +59,7 @@ router.get("/", protectrouter, async (req, res) => {
   }
 });
 
-router.get("/user", protectrouter, async (req,res) =>{
+router.get("/user", protectRoute, async (req,res) =>{
   try {
     const fitnast = await Fitnast.find({ user: req.user._id}).sort({ createdAt: -1});
     res.json(fitnast);
@@ -68,7 +69,7 @@ router.get("/user", protectrouter, async (req,res) =>{
   }
 });
 
-router.delete("/:id" ,protectrouter, async (req,res) => {
+router.delete("/:id" , protectRoute, async (req,res) => {
   try {
     const fitnast = await Fitnast.findById(req.params.id);
     if(!fitnast)  return res.status(404).json({message:"Post not found"});
