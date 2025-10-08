@@ -2,11 +2,11 @@ import express   from "express";
 import cloudinary from "../lib/cloudinary.js";
 import Fitnast from "../models/Fitnast.js";
 import User from "../models/User.js";
-import protectRoute from "../middleware/auth.middleware.js";
+import protectrouter from "../middleware/auth.middleware.js";
 
-const route = express.Router();
+const router = express.Router();
 
-route.post("/" , protectRoute, async (req,res) => {
+router.post("/" , protectrouter, async (req,res) => {
   try {
 
     const {title, load, reps, caption, rating, image} = req.body;
@@ -33,7 +33,7 @@ route.post("/" , protectRoute, async (req,res) => {
   }
 });
 // pages =infinite load
-route.get("/", protectRoute, async (req, res) => {
+router.get("/", protectrouter, async (req, res) => {
   try {
     const page = req.query.page || 1;
     const limit = req.query.limit || 2;
@@ -53,12 +53,12 @@ route.get("/", protectRoute, async (req, res) => {
       totalPages: Math.ceil(totalfitnast / limit),
     });
   } catch (error) {
-    console.log("Error in get all books route", error);
+    console.log("Error in get all books router", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
 
-route.get("/user", protectRoute, async (req,res) =>{
+router.get("/user", protectrouter, async (req,res) =>{
   try {
     const fitnast = await Fitnast.find({ user: req.user._id}).sort({ createdAt: -1});
     res.json(fitnast);
@@ -68,7 +68,7 @@ route.get("/user", protectRoute, async (req,res) =>{
   }
 });
 
-route.delete("/:id" ,protectRoute, async (req,res) => {
+router.delete("/:id" ,protectrouter, async (req,res) => {
   try {
     const fitnast = await Fitnast.findById(req.params.id);
     if(!fitnast)  return res.status(404).json({message:"Post not found"});
@@ -95,4 +95,4 @@ route.delete("/:id" ,protectRoute, async (req,res) => {
   }
 });
 
-export default route;
+export default router;
