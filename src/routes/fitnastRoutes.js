@@ -27,6 +27,7 @@ router.post("/" , protectRoute, async (req,res) => {
     })  
     await newFitnast.save();
     res.status(201).json(newFitnast);
+console.log("Incoming POST /api/fitnasts:", req.body);
 
   } catch (error) {
     console.log("error Creating fitnast",error);

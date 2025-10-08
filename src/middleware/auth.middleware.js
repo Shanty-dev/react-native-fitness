@@ -2,25 +2,25 @@ import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
 const protectRoute = async (req,res,next) => {
+ const protectRoute = async (req, res, next) => {
   try {
-    //get token
-    const token =req.header("Authorization").replace("Bearer ","");
-    if(!token)  return res.status(401).json({Message:"NO Authorization token, access denaied"});
+    const authHeader = req.header("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ Message: "No Authorization token, access denied" });
+    }
 
-    //verify token
+    const token = authHeader.replace("Bearer ", "");
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    //find user
-    const user = await User.findById(decoded.userId).select(("-password"));
-    if(!user) return res.status(401).json({Message:"Token is not valid"});
+    const user = await User.findById(decoded.userId).select("-password");
+    if (!user) return res.status(401).json({ Message: "Token is not valid" });
 
-    req.user =user;
+    req.user = user;
     next();
-
-    
   } catch (error) {
-    console.error("Authorization error:", error.Message);
-    res.status(401).json({Message: "Token is not vaild"});
+    console.error("Authorization error:", error.message);
+    res.status(401).json({ Message: "Token is not valid" });
   }
 };
+
 export default protectRoute;
