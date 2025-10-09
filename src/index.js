@@ -1,7 +1,8 @@
 import express from "express";
 import "dotenv/config";
 import authRoutes from "./routes/authRoutes.js";
-import fitnastRoutes from "./routes/fitnastRoutes.js"
+import fitnastRoutes from "./routes/fitnastRoutes.js";
+import fitnessRoutes from "./models/Fitness.js";
 import { connectDB } from "./lib/db.js"; 
 import cors from "cors";
 import job from "./lib/cors.js";
@@ -15,6 +16,7 @@ app.use(cors()); //midlerware
 
 app.use("/api/auth",authRoutes);
 app.use("/api/fitnasts",fitnastRoutes);
+app.use("/api/fitnesss",fitnessRoutes);
 
 
 app.listen(PORT, () => {
