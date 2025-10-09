@@ -14,7 +14,7 @@ app.use(express.json()); //midlerwaere
 app.use(cors()); //midlerware
 
 app.use("/api/auth",authRoutes);
-app.use("/api/fit",fitnastRoutes);
+app.use("/api/fitnasts",fitnastRoutes);
 
 
 app.listen(PORT, () => {
