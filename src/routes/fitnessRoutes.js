@@ -44,19 +44,19 @@ router.get("/", protectRoute, async (req, res) => {
     const limit = req.query.limit || 2;
     const skip = (page - 1) * limit;
 
-    const fitnesss = await Fitness.find()
+    const fitness = await Fitness.find()
       .sort({ createdAt: -1 }) // desc
       .skip(skip)
       .limit(limit)
       .populate("user", "username profileImage");
 
-    const totalFitnesss = await Fitness.countDocuments();
+    const totalFitness = await Fitness.countDocuments();
 
     res.send({
-      fitnesss,
+      fitness,
       currentPage: page,
-      totalFitnesss,
-      totalPages: Math.ceil(totalFitnesss / limit),
+      totalFitness,
+      totalPages: Math.ceil(totalFitness / limit),
     });
   } catch (error) {
     console.log("Error in get all fitness route", error);
@@ -67,10 +67,10 @@ router.get("/", protectRoute, async (req, res) => {
 // get recommended books by the logged in user
 router.get("/user", protectRoute, async (req, res) => {
   try {
-    const fitnesss = await Fitness.find({ user: req.user._id }).sort({ createdAt: -1 });
-    res.json(fitnesss);
+    const fitness = await Fitness.find({ user: req.user._id }).sort({ createdAt: -1 });
+    res.json(fitness);
   } catch (error) {
-    console.error("Get user fitnesss error:", error.message);
+    console.error("Get user fitness error:", error.message);
     res.status(500).json({ message: "Server error" });
   }
 });
