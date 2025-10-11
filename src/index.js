@@ -18,7 +18,7 @@ app.use(express.json({ limit: '10mb' }));
 
 
 app.use("/api/auth", authRoutes);
-app.use("/api/fitnasts", fitnastRoutes);
+app.use("/api/fitnast", fitnastRoutes);
 app.use("/api/fitnesss",fitnessRoutes);
 
 
