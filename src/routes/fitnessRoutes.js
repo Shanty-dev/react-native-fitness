@@ -18,7 +18,7 @@ router.post("/", protectRoute, async (req, res) => {
     const imageUrl = uploadResponse.secure_url;
 
     // save to the database
-    const newFitnast = new Fitness({
+    const newFitness = new Fitness({
       title,
       caption,
       rating,
@@ -26,9 +26,9 @@ router.post("/", protectRoute, async (req, res) => {
       user: req.user._id,
     });
 
-    await newFitnast.save();
+    await newFitness.save();
 
-    res.status(201).json(newFitnast);
+    res.status(201).json(newFitness);
   } catch (error) {
     console.log("Error creating post", error);
     res.status(500).json({ message: error.message });
