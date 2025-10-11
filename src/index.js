@@ -2,7 +2,7 @@ import express from "express";
 import "dotenv/config";
 import authRoutes from "./routes/authRoutes.js";
 import fitnastRoutes from "./routes/fitnastRoutes.js";
-import fitnessRoutes from "./models/Fitness.js";
+import fitnessRoutes from "./routes/fitnessRoutes.js";
 import { connectDB } from "./lib/db.js"; 
 import cors from "cors";
 import job from "./lib/cors.js";
