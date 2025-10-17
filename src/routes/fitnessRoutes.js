@@ -1,107 +1,104 @@
 import express from "express";
+import asyncHandler from "express-async-handler";
 import cloudinary from "../lib/cloudinary.js";
 import Fitness from "../models/Fitness.js";
 import protectRoute from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-router.post("/", protectRoute, async (req, res) => {
-  try {
-    const { title, caption, rating, image } = req.body;
+// --- Controllers for each route ---
 
-    if (!image || !title || !caption || !rating) {
-      return res.status(400).json({ message: "Please provide all fields" });
-    }
+// POST /api/fitness
+const createFitnessPost = asyncHandler(async (req, res) => {
+  const { title, caption, rating, image } = req.body;
 
-    // upload the image to cloudinary
-    const uploadResponse = await cloudinary.uploader.upload(image);
-    const imageUrl = uploadResponse.secure_url;
-
-    // save to the database
-    const newFitness = new Fitness({
-      title,
-      caption,
-      rating,
-      image: imageUrl,
-      user: req.user._id,
-    });
-
-    await newFitness.save();
-
-    res.status(201).json(newFitness);
-  } catch (error) {
-    console.log("Error creating post", error);
-    res.status(500).json({ message: error.message });
+  if (!image || !title || !caption || !rating) {
+    res.status(400);
+    throw new Error("Please provide all fields");
   }
+
+  // upload the image to cloudinary
+  const uploadResponse = await cloudinary.uploader.upload(image);
+  const imageUrl = uploadResponse.secure_url;
+
+  // save to the database
+  const newFitness = new Fitness({
+    title,
+    caption,
+    rating,
+    image: imageUrl,
+    user: req.user._id,
+  });
+
+  await newFitness.save();
+
+  res.status(201).json(newFitness);
 });
 
-// pagination => infinite loading
-router.get("/", protectRoute, async (req, res) => {
-  // example call from react native - frontend
-  // const response = await fetch("http://localhost:3000/api/books?page=1&limit=5");
-  try {
-    const page = req.query.page || 1;
-    const limit = req.query.limit || 2;
-    const skip = (page - 1) * limit;
+// GET /api/fitness (pagination and infinite loading)
+const getAllFitnessPosts = asyncHandler(async (req, res) => {
+  const page = parseInt(req.query.page, 10) || 1;
+  const limit = parseInt(req.query.limit, 10) || 2;
+  const skip = (page - 1) * limit;
 
-    const fitness = await Fitness.find()
-      .sort({ createdAt: -1 }) // desc
+  const [fitnessPosts, totalFitness] = await Promise.all([
+    Fitness.find()
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate("user", "username profileImage");
+      .populate("user", "username profileImage"),
+    Fitness.countDocuments(),
+  ]);
 
-    const totalFitness = await Fitness.countDocuments();
-
-    res.send({
-      fitness,
-      currentPage: page,
-      totalFitness,
-      totalPages: Math.ceil(totalFitness / limit),
-    });
-  } catch (error) {
-    console.log("Error in get all fitness route", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
+  res.send({
+    fitness: fitnessPosts,
+    currentPage: page,
+    totalFitness,
+    totalPages: Math.ceil(totalFitness / limit),
+  });
 });
 
-// get recommended books by the logged in user
-router.get("/user", protectRoute, async (req, res) => {
-  try {
-    const fitness = await Fitness.find({ user: req.user._id }).sort({ createdAt: -1 });
-    res.json(fitness);
-  } catch (error) {
-    console.error("Get user fitness error:", error.message);
-    res.status(500).json({ message: "Server error" });
-  }
+// GET /api/fitness/user (recommended posts by the logged-in user)
+const getUserFitnessPosts = asyncHandler(async (req, res) => {
+  const fitnessPosts = await Fitness.find({ user: req.user._id }).sort({ createdAt: -1 });
+  res.json(fitnessPosts);
 });
 
-router.delete("/:id", protectRoute, async (req, res) => {
-  try {
-    const fitness = await Fitness.findById(req.params.id);
-    if (!fitness) return res.status(404).json({ message: "post not found" });
+// DELETE /api/fitness/:id
+const deleteFitnessPost = asyncHandler(async (req, res) => {
+  const fitnessPost = await Fitness.findById(req.params.id);
 
-    // check if user is the creator of the book
-    if (fitness.user.toString() !== req.user._id.toString())
-      return res.status(401).json({ message: "Unauthorized" });
+  if (!fitnessPost) {
+    res.status(404);
+    throw new Error("Post not found");
+  }
 
-    // https://res.cloudinary.com/de1rm4uto/image/upload/v1741568358/qyup61vejflxxw8igvi0.png
-    // delete image from cloduinary as well
-    if (fitness.image && fitness.image.includes("cloudinary")) {
-      try {
-        const publicId = fitness.image.split("/").pop().split(".")[0];
-        await cloudinary.uploader.destroy(publicId);
-      } catch (deleteError) {
-        console.log("Error deleting image from cloudinary", deleteError);
-      }
+  // Check if user is the creator of the post
+  if (fitnessPost.user.toString() !== req.user._id.toString()) {
+    res.status(401);
+    throw new Error("Not authorized to delete this post");
+  }
+
+  // Delete image from cloudinary if it exists
+  if (fitnessPost.image && fitnessPost.image.includes("cloudinary")) {
+    try {
+      const publicId = fitnessPost.image.split("/").pop().split(".")[0];
+      await cloudinary.uploader.destroy(publicId);
+    } catch (deleteError) {
+      console.error("Error deleting image from Cloudinary:", deleteError);
+      // We can choose to continue even if cloudinary deletion fails
     }
-
-    await fitness.deleteOne();
-
-    res.json({ message: "post deleted successfully" });
-  } catch (error) {
-    console.log("Error deleting post", error);
-    res.status(500).json({ message: "Internal server error" });
   }
+
+  await fitnessPost.deleteOne();
+
+  res.json({ message: "Post deleted successfully" });
 });
+
+// --- Route definitions using controllers ---
+router.post("/", protectRoute, createFitnessPost);
+router.get("/", protectRoute, getAllFitnessPosts);
+router.get("/user", protectRoute, getUserFitnessPosts);
+router.delete("/:id", protectRoute, deleteFitnessPost);
 
 export default router;

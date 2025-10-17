@@ -30,6 +30,6 @@ const fitnessSchema = new mongoose.Schema(
 {timestamps: true}
 );
 
-const fitness = mongoose.model("fitness", fitnessSchema);
+const Fitness = mongoose.model("fitness", fitnessSchema);
 
-export default fitness;
+export default Fitness;

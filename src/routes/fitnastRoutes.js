@@ -6,7 +6,7 @@ import protectRoute from "../middleware/auth.middleware.js";
 const router = express.Router();
 
 // 📌 Create a new Fitnast post
-router.post("/api/fitnasts", protectRoute, async (req, res) => {
+router.post("/api/fitnast", protectRoute, async (req, res) => {
   try {
     const { title, caption, rating, image } = req.body;
 
