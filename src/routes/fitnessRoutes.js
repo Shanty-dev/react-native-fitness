@@ -1,5 +1,5 @@
 import express from "express";
-import asyncHandler from "express-async-handler";
+import asyncHandler from 'express-async-handler';
 import cloudinary from "../lib/cloudinary.js";
 import Fitness from "../models/Fitness.js";
 import protectRoute from "../middleware/auth.middleware.js";
