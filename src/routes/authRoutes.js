@@ -35,8 +35,8 @@ router.post("/register", async(req,res) =>{
       email,  
       username,
       password,
-      profileImage: "", 
-    })
+      profileImage, 
+    });
     await user.save();
 
     const token = generateToken(user._id)
@@ -67,7 +67,7 @@ router.post("/login", async(req,res) =>{
     
     // check if password is correct
     const isPasswordCorrect = await user.comparePassword(password);
-    if(!isPasswordCorrect) return res.status(400).json({message:"Invald credentials"});
+    if(!isPasswordCorrect) return res.status(400).json({message:"PInvald credentials"});
     //generate token
     const token = generateToken(user._id);
     res.status(200).json({
